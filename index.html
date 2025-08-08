@@ -1,0 +1,786 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aubrey's Evolution Lab</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: radial-gradient(circle at center, #0f0f23, #1a0033, #000);
+            min-height: 100vh;
+            font-family: 'Arial', sans-serif;
+            color: #fff;
+            overflow-x: hidden;
+        }
+
+        .lab-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .title {
+            font-size: 3em;
+            background: linear-gradient(45deg, #ff6b35, #ffd700, #8a2be2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 10px;
+            text-shadow: 0 0 30px rgba(255, 215, 0, 0.5);
+        }
+
+        .subtitle {
+            font-size: 1.2em;
+            color: #ffd700;
+            margin-bottom: 20px;
+        }
+
+        .main-area {
+            display: grid;
+            grid-template-columns: 1fr 350px;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .monster-display {
+            background: rgba(26, 0, 51, 0.8);
+            border: 2px solid #8a2be2;
+            border-radius: 20px;
+            padding: 30px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .monster-display::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: conic-gradient(transparent, rgba(138, 43, 226, 0.1), transparent);
+            animation: rotate 10s linear infinite;
+        }
+
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .monster-name {
+            font-size: 2.5em;
+            color: #ffd700;
+            margin-bottom: 10px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .monster-stage {
+            font-size: 1.1em;
+            color: #ff6b35;
+            margin-bottom: 20px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .monster-visual {
+            width: 250px;
+            height: 250px;
+            margin: 20px auto;
+            position: relative;
+            z-index: 2;
+            transition: all 0.5s ease;
+        }
+
+        .monster {
+            width: 100%;
+            height: 100%;
+            border-radius: 50% 40% 60% 30%;
+            position: relative;
+            transition: all 0.8s ease;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .monster.evolving {
+            animation: evolve 1.5s ease-in-out;
+        }
+
+        @keyframes evolve {
+            0% { transform: scale(1) rotate(0deg); }
+            25% { transform: scale(1.2) rotate(90deg); filter: brightness(2); }
+            50% { transform: scale(0.8) rotate(180deg); filter: hue-rotate(180deg); }
+            75% { transform: scale(1.3) rotate(270deg); filter: brightness(3); }
+            100% { transform: scale(1) rotate(360deg); filter: brightness(1); }
+        }
+
+        .monster-features {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+        }
+
+        .eyes {
+            position: absolute;
+            top: 25%;
+            width: 100%;
+            display: flex;
+            justify-content: space-around;
+            padding: 0 25%;
+        }
+
+        .eye {
+            width: 20px;
+            height: 20px;
+            background: #fff;
+            border-radius: 50%;
+            position: relative;
+            transition: all 0.5s ease;
+        }
+
+        .pupil {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background: #000;
+            border-radius: 50%;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        .mouth {
+            position: absolute;
+            bottom: 25%;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 40px;
+            height: 20px;
+            background: #000;
+            border-radius: 0 0 40px 40px;
+            transition: all 0.5s ease;
+        }
+
+        .monster-stats {
+            position: relative;
+            z-index: 2;
+            margin-top: 20px;
+        }
+
+        .stat {
+            display: flex;
+            justify-content: space-between;
+            margin: 10px 0;
+            font-size: 1.1em;
+        }
+
+        .stat-value {
+            color: #ffd700;
+            font-weight: bold;
+        }
+
+        .evolution-panel {
+            background: rgba(26, 0, 51, 0.8);
+            border: 2px solid #ff6b35;
+            border-radius: 20px;
+            padding: 25px;
+        }
+
+        .panel-title {
+            font-size: 1.8em;
+            color: #ff6b35;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .dna-elements {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .dna-element {
+            background: rgba(138, 43, 226, 0.3);
+            border: 2px solid #8a2be2;
+            border-radius: 15px;
+            padding: 15px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .dna-element:hover {
+            background: rgba(138, 43, 226, 0.6);
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(138, 43, 226, 0.4);
+        }
+
+        .dna-element.selected {
+            background: rgba(255, 107, 53, 0.6);
+            border-color: #ff6b35;
+            box-shadow: 0 0 20px rgba(255, 107, 53, 0.8);
+        }
+
+        .dna-icon {
+            font-size: 2em;
+            margin-bottom: 10px;
+        }
+
+        .dna-name {
+            font-size: 1em;
+            font-weight: bold;
+        }
+
+        .dna-count {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: #ffd700;
+            color: #000;
+            border-radius: 50%;
+            width: 25px;
+            height: 25px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8em;
+            font-weight: bold;
+        }
+
+        .evolution-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .btn {
+            padding: 15px 25px;
+            border: none;
+            border-radius: 25px;
+            font-size: 1.1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+        }
+
+        .btn-evolve {
+            background: linear-gradient(45deg, #ff6b35, #ff4500);
+            color: white;
+            box-shadow: 0 5px 15px rgba(255, 107, 53, 0.4);
+        }
+
+        .btn-evolve:hover:not(:disabled) {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(255, 107, 53, 0.6);
+        }
+
+        .btn-evolve:disabled {
+            background: #555;
+            cursor: not-allowed;
+            opacity: 0.5;
+        }
+
+        .btn-collect {
+            background: linear-gradient(45deg, #8a2be2, #4a0080);
+            color: white;
+            box-shadow: 0 5px 15px rgba(138, 43, 226, 0.4);
+        }
+
+        .btn-collect:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(138, 43, 226, 0.6);
+        }
+
+        .discovery-log {
+            grid-column: 1 / -1;
+            background: rgba(26, 0, 51, 0.6);
+            border: 2px solid #ffd700;
+            border-radius: 20px;
+            padding: 25px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .log-title {
+            font-size: 1.5em;
+            color: #ffd700;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .log-entry {
+            background: rgba(255, 215, 0, 0.1);
+            border-left: 4px solid #ffd700;
+            padding: 10px 15px;
+            margin: 10px 0;
+            border-radius: 0 10px 10px 0;
+            animation: slideIn 0.5s ease;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(-20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        .evolution-particles {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .evolution-particles.active {
+            opacity: 1;
+        }
+
+        .particle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: #ffd700;
+            border-radius: 50%;
+            animation: sparkle 1s ease-in-out infinite;
+        }
+
+        @keyframes sparkle {
+            0%, 100% { opacity: 0; transform: scale(0); }
+            50% { opacity: 1; transform: scale(1); }
+        }
+
+        /* Evolution stages */
+        .stage-baby {
+            background: radial-gradient(circle at 30% 30%, #ff69b4, #ff1493);
+            box-shadow: 0 0 30px rgba(255, 105, 180, 0.8);
+        }
+
+        .stage-child {
+            background: radial-gradient(circle at 30% 30%, #4169e1, #1e90ff);
+            box-shadow: 0 0 30px rgba(65, 105, 225, 0.8);
+        }
+
+        .stage-teen {
+            background: radial-gradient(circle at 30% 30%, #32cd32, #228b22);
+            box-shadow: 0 0 30px rgba(50, 205, 50, 0.8);
+        }
+
+        .stage-adult {
+            background: radial-gradient(circle at 30% 30%, #ff6b35, #ff4500);
+            box-shadow: 0 0 30px rgba(255, 107, 53, 0.8);
+        }
+
+        .stage-ancient {
+            background: radial-gradient(circle at 30% 30%, #8a2be2, #4b0082);
+            box-shadow: 0 0 30px rgba(138, 43, 226, 0.8);
+        }
+
+        .stage-cosmic {
+            background: radial-gradient(circle at 30% 30%, #ffd700, #ffff00);
+            box-shadow: 0 0 30px rgba(255, 215, 0, 0.8);
+        }
+
+        @media (max-width: 768px) {
+            .main-area {
+                grid-template-columns: 1fr;
+            }
+            
+            .title {
+                font-size: 2em;
+            }
+            
+            .monster-visual {
+                width: 200px;
+                height: 200px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="lab-container">
+        <div class="header">
+            <h1 class="title">🧬 Evolution Lab 🧬</h1>
+            <p class="subtitle">Help Aubrey evolve into the ultimate monster!</p>
+        </div>
+
+        <div class="main-area">
+            <div class="monster-display">
+                <h2 class="monster-name">Aubrey</h2>
+                <p class="monster-stage" id="monsterStage">Baby Monster</p>
+                
+                <div class="monster-visual">
+                    <div class="monster stage-baby" id="monster">
+                        <div class="monster-features">
+                            <div class="eyes">
+                                <div class="eye"><div class="pupil"></div></div>
+                                <div class="eye"><div class="pupil"></div></div>
+                            </div>
+                            <div class="mouth"></div>
+                        </div>
+                    </div>
+                    <div class="evolution-particles" id="evolutionParticles"></div>
+                </div>
+
+                <div class="monster-stats">
+                    <div class="stat">
+                        <span>Level:</span>
+                        <span class="stat-value" id="level">1</span>
+                    </div>
+                    <div class="stat">
+                        <span>Power:</span>
+                        <span class="stat-value" id="power">10</span>
+                    </div>
+                    <div class="stat">
+                        <span>Intelligence:</span>
+                        <span class="stat-value" id="intelligence">5</span>
+                    </div>
+                    <div class="stat">
+                        <span>Magic:</span>
+                        <span class="stat-value" id="magic">3</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="evolution-panel">
+                <h3 class="panel-title">DNA Elements</h3>
+                
+                <div class="dna-elements">
+                    <div class="dna-element" data-element="fire">
+                        <div class="dna-icon">🔥</div>
+                        <div class="dna-name">Fire</div>
+                        <div class="dna-count" id="fire-count">0</div>
+                    </div>
+                    <div class="dna-element" data-element="water">
+                        <div class="dna-icon">💧</div>
+                        <div class="dna-name">Water</div>
+                        <div class="dna-count" id="water-count">0</div>
+                    </div>
+                    <div class="dna-element" data-element="earth">
+                        <div class="dna-icon">🌍</div>
+                        <div class="dna-name">Earth</div>
+                        <div class="dna-count" id="earth-count">0</div>
+                    </div>
+                    <div class="dna-element" data-element="air">
+                        <div class="dna-icon">💨</div>
+                        <div class="dna-name">Air</div>
+                        <div class="dna-count" id="air-count">0</div>
+                    </div>
+                    <div class="dna-element" data-element="light">
+                        <div class="dna-icon">✨</div>
+                        <div class="dna-name">Light</div>
+                        <div class="dna-count" id="light-count">0</div>
+                    </div>
+                    <div class="dna-element" data-element="shadow">
+                        <div class="dna-icon">🌑</div>
+                        <div class="dna-name">Shadow</div>
+                        <div class="dna-count" id="shadow-count">0</div>
+                    </div>
+                </div>
+
+                <div class="evolution-actions">
+                    <button class="btn btn-collect" id="collectBtn">Collect DNA</button>
+                    <button class="btn btn-evolve" id="evolveBtn" disabled>Evolve Aubrey</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="discovery-log">
+            <h3 class="log-title">📜 Evolution Log</h3>
+            <div id="logEntries">
+                <div class="log-entry">Welcome to the Evolution Lab! Aubrey is ready to begin her transformation journey.</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class EvolutionLab {
+            constructor() {
+                this.monster = {
+                    name: "Aubrey",
+                    level: 1,
+                    stage: "baby",
+                    power: 10,
+                    intelligence: 5,
+                    magic: 3
+                };
+
+                this.dnaElements = {
+                    fire: 0,
+                    water: 0,
+                    earth: 0,
+                    air: 0,
+                    light: 0,
+                    shadow: 0
+                };
+
+                this.selectedElement = null;
+                this.evolutionStages = [
+                    { name: "Baby Monster", level: 1, class: "stage-baby" },
+                    { name: "Child Monster", level: 5, class: "stage-child" },
+                    { name: "Teen Monster", level: 10, class: "stage-teen" },
+                    { name: "Adult Monster", level: 20, class: "stage-adult" },
+                    { name: "Ancient Monster", level: 35, class: "stage-ancient" },
+                    { name: "Cosmic Monster", level: 50, class: "stage-cosmic" }
+                ];
+
+                this.init();
+            }
+
+            init() {
+                this.setupEventListeners();
+                this.updateDisplay();
+                this.startAutoCollection();
+            }
+
+            setupEventListeners() {
+                document.getElementById('collectBtn').addEventListener('click', () => this.collectDNA());
+                document.getElementById('evolveBtn').addEventListener('click', () => this.evolveMonster());
+                
+                document.querySelectorAll('.dna-element').forEach(element => {
+                    element.addEventListener('click', () => this.selectElement(element.dataset.element));
+                });
+            }
+
+            selectElement(element) {
+                // Remove previous selection
+                document.querySelectorAll('.dna-element').forEach(el => el.classList.remove('selected'));
+                
+                // Select new element
+                this.selectedElement = element;
+                document.querySelector(`[data-element="${element}"]`).classList.add('selected');
+                
+                this.updateEvolveButton();
+            }
+
+            collectDNA() {
+                const elements = Object.keys(this.dnaElements);
+                const randomElement = elements[Math.floor(Math.random() * elements.length)];
+                const amount = Math.floor(Math.random() * 3) + 1;
+                
+                this.dnaElements[randomElement] += amount;
+                
+                this.updateDisplay();
+                this.addLogEntry(`🧬 Collected ${amount} ${randomElement} DNA!`);
+                
+                // Special collection animations
+                this.showCollectionEffect(randomElement);
+            }
+
+            showCollectionEffect(element) {
+                const icons = {
+                    fire: '🔥',
+                    water: '💧',
+                    earth: '🌍',
+                    air: '💨',
+                    light: '✨',
+                    shadow: '🌑'
+                };
+                
+                const icon = icons[element];
+                const effectDiv = document.createElement('div');
+                effectDiv.innerHTML = icon;
+                effectDiv.style.cssText = `
+                    position: fixed;
+                    font-size: 2em;
+                    pointer-events: none;
+                    z-index: 1000;
+                    animation: collectEffect 1s ease-out forwards;
+                `;
+                
+                const rect = document.querySelector(`[data-element="${element}"]`).getBoundingClientRect();
+                effectDiv.style.left = rect.left + rect.width/2 + 'px';
+                effectDiv.style.top = rect.top + rect.height/2 + 'px';
+                
+                document.body.appendChild(effectDiv);
+                
+                setTimeout(() => effectDiv.remove(), 1000);
+            }
+
+            evolveMonster() {
+                if (!this.canEvolve()) return;
+                
+                // Consume DNA for evolution
+                Object.keys(this.dnaElements).forEach(element => {
+                    this.dnaElements[element] = Math.max(0, this.dnaElements[element] - 5);
+                });
+                
+                // Level up
+                this.monster.level += Math.floor(Math.random() * 3) + 2;
+                this.monster.power += Math.floor(Math.random() * 10) + 5;
+                this.monster.intelligence += Math.floor(Math.random() * 8) + 3;
+                this.monster.magic += Math.floor(Math.random() * 6) + 2;
+                
+                // Check for stage evolution
+                this.checkStageEvolution();
+                
+                // Evolution animation
+                this.playEvolutionAnimation();
+                
+                this.updateDisplay();
+                this.addLogEntry(`🎉 Aubrey evolved! Now level ${this.monster.level}!`);
+            }
+
+            checkStageEvolution() {
+                const currentStageIndex = this.evolutionStages.findIndex(stage => stage.class === this.monster.stage);
+                const nextStage = this.evolutionStages[currentStageIndex + 1];
+                
+                if (nextStage && this.monster.level >= nextStage.level) {
+                    this.monster.stage = nextStage.class;
+                    this.addLogEntry(`🌟 Aubrey reached a new stage: ${nextStage.name}!`);
+                }
+            }
+
+            playEvolutionAnimation() {
+                const monsterEl = document.getElementById('monster');
+                const particlesEl = document.getElementById('evolutionParticles');
+                
+                // Add evolution class for animation
+                monsterEl.classList.add('evolving');
+                
+                // Show particles
+                particlesEl.classList.add('active');
+                this.createEvolutionParticles();
+                
+                // Play evolution sound
+                this.playEvolutionSound();
+                
+                setTimeout(() => {
+                    monsterEl.classList.remove('evolving');
+                    particlesEl.classList.remove('active');
+                    particlesEl.innerHTML = '';
+                }, 1500);
+            }
+
+            createEvolutionParticles() {
+                const container = document.getElementById('evolutionParticles');
+                
+                for (let i = 0; i < 20; i++) {
+                    const particle = document.createElement('div');
+                    particle.className = 'particle';
+                    particle.style.left = Math.random() * 100 + '%';
+                    particle.style.top = Math.random() * 100 + '%';
+                    particle.style.animationDelay = Math.random() * 0.5 + 's';
+                    container.appendChild(particle);
+                }
+            }
+
+            playEvolutionSound() {
+                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                const oscillator = audioContext.createOscillator();
+                const gainNode = audioContext.createGain();
+                
+                oscillator.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+                
+                oscillator.frequency.setValueAtTime(200, audioContext.currentTime);
+                oscillator.frequency.exponentialRampToValueAtTime(800, audioContext.currentTime + 0.5);
+                oscillator.frequency.exponentialRampToValueAtTime(400, audioContext.currentTime + 1);
+                
+                gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 1);
+                
+                oscillator.start(audioContext.currentTime);
+                oscillator.stop(audioContext.currentTime + 1);
+            }
+
+            canEvolve() {
+                const totalDNA = Object.values(this.dnaElements).reduce((sum, count) => sum + count, 0);
+                return totalDNA >= 30; // Need 30 total DNA to evolve
+            }
+
+            updateEvolveButton() {
+                const btn = document.getElementById('evolveBtn');
+                const canEvolve = this.canEvolve();
+                
+                btn.disabled = !canEvolve;
+                btn.textContent = canEvolve ? 'Evolve Aubrey' : `Need ${30 - Object.values(this.dnaElements).reduce((sum, count) => sum + count, 0)} more DNA`;
+            }
+
+            updateDisplay() {
+                // Update monster stats
+                document.getElementById('level').textContent = this.monster.level;
+                document.getElementById('power').textContent = this.monster.power;
+                document.getElementById('intelligence').textContent = this.monster.intelligence;
+                document.getElementById('magic').textContent = this.monster.magic;
+                
+                // Update monster stage
+                const currentStage = this.evolutionStages.find(stage => stage.class === this.monster.stage) || this.evolutionStages[0];
+                document.getElementById('monsterStage').textContent = currentStage.name;
+                
+                // Update monster appearance
+                const monsterEl = document.getElementById('monster');
+                monsterEl.className = `monster ${this.monster.stage}`;
+                
+                // Update DNA counts
+                Object.keys(this.dnaElements).forEach(element => {
+                    document.getElementById(`${element}-count`).textContent = this.dnaElements[element];
+                });
+                
+                // Update evolve button
+                this.updateEvolveButton();
+            }
+
+            addLogEntry(message) {
+                const logContainer = document.getElementById('logEntries');
+                const entry = document.createElement('div');
+                entry.className = 'log-entry';
+                entry.textContent = message;
+                
+                logContainer.appendChild(entry);
+                logContainer.scrollTop = logContainer.scrollHeight;
+                
+                // Limit log entries
+                const entries = logContainer.children;
+                if (entries.length > 10) {
+                    logContainer.removeChild(entries[0]);
+                }
+            }
+
+            startAutoCollection() {
+                // Auto-collect DNA every 10 seconds
+                setInterval(() => {
+                    const chance = Math.random();
+                    if (chance < 0.3) { // 30% chance every 10 seconds
+                        this.collectDNA();
+                        this.addLogEntry('🌟 Aubrey found some DNA on her own!');
+                    }
+                }, 10000);
+            }
+        }
+
+        // Add CSS for collection effect
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes collectEffect {
+                0% { transform: scale(1) translateY(0); opacity: 1; }
+                100% { transform: scale(2) translateY(-50px); opacity: 0; }
+            }
+        `;
+        document.head.appendChild(style);
+
+        // Initialize the lab
+        const lab = new EvolutionLab();
+    </script>
+</body>
+</html>
